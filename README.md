@@ -115,9 +115,11 @@ login.microsoftonline.com  appleid.apple.com
 
 在支持 WebAuthn 的 Android System WebView 上，点登录页的「使用通行密钥」即可调用系统凭据选择器。旧 WebView 保留原来的登录流程，可以选择站点允许的其他方式。
 
-自建登录页需要在 **Passkey 的 RP ID 域名**上发布 `https://<RP ID>/.well-known/assetlinks.json`，用 `delegate_permission/common.get_login_creds` 关联 APK 的包名和签名证书 SHA-256。正式版包名是 `io.github.flashsky1024.tavernium`；测试版是 `io.github.flashsky1024.tavernium.debug`，两者签名也不同。服务端校验 WebAuthn 响应时须接受对应 APK 的 Android origin。见 [Android 配置说明](https://developer.android.com/identity/credential-manager/prerequisites)。
+**Cloudflare Access + Bitwarden：** 在 Android 14 或更高版本上，把 Bitwarden 设为系统首选通行密钥服务，打开 Tavernium 的「网络与账号设置 → 第三方网站通行密钥」。然后在酒馆的 Access 登录页选择「使用通行密钥」。如果 Bitwarden 询问是否信任该应用，请核对是自己安装的 Tavernium，再选择已有的 Cloudflare 通行密钥。无需修改 Cloudflare 或在酒馆域名部署文件。
 
-登录域名白名单只决定页面能否在应用里打开，不授予凭据访问权。若 Passkey 属于 Cloudflare Access 等第三方管理的域名，只在酒馆域名配置关联无效。
+该开关让主 WebView 以网站的真实来源请求凭据，默认关闭。Bitwarden 的信任对象是应用，而不只是某个酒馆；可在 Bitwarden 的「设置 → 自动填充 → 特权应用」中查看或撤销。
+
+**应用模式（开关关闭）：** 自建登录页需在 Passkey 的 RP ID 域名发布 `/.well-known/assetlinks.json`，用 `delegate_permission/common.get_login_creds` 关联 APK 的包名和签名证书，并在服务端接受对应的 Android origin。见 [Android 配置说明](https://developer.android.com/identity/credential-manager/prerequisites)。登录域名白名单仅控制页面跳转。
 
 ### 导出文件
 

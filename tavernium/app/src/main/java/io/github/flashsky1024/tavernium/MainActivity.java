@@ -138,6 +138,7 @@ public class MainActivity extends Activity {
     private static final String PREF_TRUSTED_HTTP = "trusted_http_origins";
     /** 用户额外添加的第三方登录域名（Discord / SSO 门户），叠加在内置列表之上。 */
     private static final String PREF_LOGIN_HOSTS = "login_hosts";
+    private static final String PREF_BROWSER_PASSKEYS = "browser_passkeys";
     /** 站外链接是否交给系统浏览器；关闭后所有 http(s) 链接都在应用内打开。 */
     private static final String PREF_OPEN_EXTERNAL = "open_external";
     /**
@@ -597,6 +598,26 @@ public class MainActivity extends Activity {
         }
     }
 
+    private boolean canUseBrowserPasskeys() {
+        return Build.VERSION.SDK_INT >= 34
+                && checkSelfPermission("android.permission.CREDENTIAL_MANAGER_SET_ORIGIN")
+                        == android.content.pm.PackageManager.PERMISSION_GRANTED
+                && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION);
+    }
+
+    private void configurePasskeys(WebSettings settings) {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+            return;
+        }
+        boolean browser = prefs.getBoolean(PREF_BROWSER_PASSKEYS, false) && canUseBrowserPasskeys();
+        int mode = browser ? WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_BROWSER
+                : WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP;
+        WebSettingsCompat.setWebAuthenticationSupport(settings, mode);
+        if (WebSettingsCompat.getWebAuthenticationSupport(settings) != mode) {
+            PerfLog.w(TAG, "WebView declined WebAuthn mode " + mode);
+        }
+    }
+
     /**
      * 创建（或重建）WebView 并加载服务器地址。
      * 首次进入由 onCreate 调用；渲染进程被系统回收/崩溃后，
@@ -621,14 +642,7 @@ public class MainActivity extends Activity {
 
         WebSettings settings = this.webView.getSettings();
         settings.setJavaScriptEnabled(true);
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
-            WebSettingsCompat.setWebAuthenticationSupport(settings,
-                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP);
-            if (WebSettingsCompat.getWebAuthenticationSupport(settings)
-                    != WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP) {
-                PerfLog.w(TAG, "WebView declined app WebAuthn support");
-            }
-        }
+        configurePasskeys(settings);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
@@ -2696,7 +2710,10 @@ public class MainActivity extends Activity {
                         : "站外链接：应用内打开（点击改为用浏览器）",
                 "登录域名：" + this.loginHosts.size() + " 个（点击管理）",
                 "已信任的明文地址：" + this.trustedHttpOrigins.size() + " 个（点击管理）",
-                "jsDelivr 加速：" + jsdAccelLabel() + "（点击设置）"
+                "jsDelivr 加速：" + jsdAccelLabel() + "（点击设置）",
+                "第三方网站通行密钥：" + (canUseBrowserPasskeys()
+                        ? (prefs.getBoolean(PREF_BROWSER_PASSKEYS, false) ? "已开启" : "未开启")
+                        : "当前设备不支持")
         };
         new AlertDialog.Builder(this)
                 .setTitle("网络与账号设置")
@@ -2732,6 +2749,20 @@ public class MainActivity extends Activity {
                 return;
             case 6:
                 showJsdAccelDialog();
+                return;
+            case 7:
+                if (!canUseBrowserPasskeys()) {
+                    Toast.makeText(this, "需要 Android 14+、支持 WebAuthn 的 WebView 和网页来源权限",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+                boolean enabled = !prefs.getBoolean(PREF_BROWSER_PASSKEYS, false);
+                prefs.edit().putBoolean(PREF_BROWSER_PASSKEYS, enabled).apply();
+                if (webView != null) {
+                    configurePasskeys(webView.getSettings());
+                }
+                Toast.makeText(this, enabled ? "已开启，请在登录页选择通行密钥"
+                        : "已切回应用通行密钥模式", Toast.LENGTH_LONG).show();
                 return;
             default:
         }

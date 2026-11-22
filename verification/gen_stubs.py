@@ -40,6 +40,7 @@ package androidx.webkit;
 import android.webkit.WebSettings;
 public final class WebSettingsCompat {
     public static final int WEB_AUTHENTICATION_SUPPORT_FOR_APP = 1;
+    public static final int WEB_AUTHENTICATION_SUPPORT_FOR_BROWSER = 2;
     public static void setWebAuthenticationSupport(WebSettings settings, int mode) {
         throw new UnsupportedOperationException();
     }
