@@ -20,10 +20,9 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
-      - uses: android-actions/setup-android@v3
+          java-version: '21'
       - name: Install Android SDK 36
-        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
       - name: Build debug APK and report signing certificate
         working-directory: tavernium
         run: ./gradlew --no-daemon :app:assembleDebug :app:signingReport
