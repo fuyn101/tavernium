@@ -231,7 +231,7 @@ onCreate
 
 需要 JDK 17+ 和 Android SDK 36。
 
-没有本地 SDK 时，可在 GitHub Actions 的 **Android debug APK** 运行页下载 `tavernium-debug`，解压后安装 APK。构建日志的 `signingReport` 提供本次调试证书的 SHA-256；不同运行的临时签名可能不同，不要把它用作生产关联。
+没有本地 SDK 时，可在 GitHub Actions 的 **Android debug APK** 运行页下载 `tavernium-debug`，解压后安装 APK。构建日志里的 `certificate SHA-256 digest` 是该 APK 的调试证书指纹；不同运行的临时签名可能不同，不要把它用作生产关联。
 
 ```bash
 ./gradlew assembleRelease

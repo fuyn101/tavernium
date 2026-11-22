@@ -25,7 +25,9 @@ jobs:
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
       - name: Build debug APK and report signing certificate
         working-directory: tavernium
-        run: ./gradlew --no-daemon :app:assembleDebug :app:signingReport
+        run: |
+          ./gradlew --no-daemon :app:assembleDebug
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs app/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v4
         with:
           name: tavernium-debug
