@@ -61,6 +61,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -618,6 +621,14 @@ public class MainActivity extends Activity {
 
         WebSettings settings = this.webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
+            WebSettingsCompat.setWebAuthenticationSupport(settings,
+                    WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP);
+            if (WebSettingsCompat.getWebAuthenticationSupport(settings)
+                    != WebSettingsCompat.WEB_AUTHENTICATION_SUPPORT_FOR_APP) {
+                PerfLog.w(TAG, "WebView declined app WebAuthn support");
+            }
+        }
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);

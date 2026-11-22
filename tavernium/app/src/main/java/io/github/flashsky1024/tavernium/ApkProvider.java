@@ -20,7 +20,7 @@ import java.io.FileNotFoundException;
  * 极简 APK 提供者：把下载到 {@code cacheDir/updates/} 的安装包以 {@code content://} 形式交给系统安装器。
  *
  * <p>Android 7.0 起禁止把 {@code file://} URI 传给别的应用（FileUriExposedException），
- * 而 FileProvider 需要 androidx 依赖。本工程坚持零第三方依赖，所以手写一个只读、
+ * 因此通过一个只读、
  * 不导出的 ContentProvider：只暴露 updates 目录下的单个文件名，且拒绝任何路径穿越。</p>
  */
 public class ApkProvider extends ContentProvider {

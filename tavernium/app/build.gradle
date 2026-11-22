@@ -87,8 +87,10 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
-// 本应用零第三方依赖：全部使用 Android 框架 API
 dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'androidx.credentials:credentials:1.6.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.6.0'
 }
 
 // 产物文件名带版本号，便于区分不同构建：tavernium-<variant>-<version>.apk

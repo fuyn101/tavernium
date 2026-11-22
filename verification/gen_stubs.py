@@ -28,6 +28,26 @@ def read_app_version():
     return (name.group(1) if name else "0.0.0", int(code.group(1)) if code else 0)
 
 FILES = {
+"androidx/webkit/WebViewFeature.java": """
+package androidx.webkit;
+public final class WebViewFeature {
+    public static final String WEB_AUTHENTICATION = "WEB_AUTHENTICATION";
+    public static boolean isFeatureSupported(String feature) { return false; }
+}
+""",
+"androidx/webkit/WebSettingsCompat.java": """
+package androidx.webkit;
+import android.webkit.WebSettings;
+public final class WebSettingsCompat {
+    public static final int WEB_AUTHENTICATION_SUPPORT_FOR_APP = 1;
+    public static void setWebAuthenticationSupport(WebSettings settings, int mode) {
+        throw new UnsupportedOperationException();
+    }
+    public static int getWebAuthenticationSupport(WebSettings settings) {
+        throw new UnsupportedOperationException();
+    }
+}
+""",
 "android/R.java": """
 package android;
 public final class R {
@@ -1345,7 +1365,7 @@ for rel, body in FILES.items():
 
 # BuildConfig 由 AGP 生成，桩里按 app/build.gradle 的真实版本号合成
 _ver_name, _ver_code = read_app_version()
-_build_config = os.path.join(OUT, "wiki", "nandflash", "tavernkeep", "BuildConfig.java")
+_build_config = os.path.join(OUT, "io", "github", "flashsky1024", "tavernium", "BuildConfig.java")
 os.makedirs(os.path.dirname(_build_config), exist_ok=True)
 with open(_build_config, "w", encoding="utf-8") as f:
     f.write("""package io.github.flashsky1024.tavernium;

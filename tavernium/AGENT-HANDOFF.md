@@ -12,7 +12,7 @@
 
 ## 0. 一句话
 
-这是一个**零第三方依赖的 Android WebView 壳**，把一个自建的 SillyTavern Web 前端包装成 APK，
+这是一个 **Android WebView 壳**，通过 AndroidX 接入 WebAuthn，把一个自建的 SillyTavern Web 前端包装成 APK，
 额外提供：后台保活（伪造页面可见性）、下载落盘、防烧屏挂机、自建更新通道。
 
 ---

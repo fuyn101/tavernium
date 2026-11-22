@@ -74,6 +74,7 @@ def main():
         sdk_classes.mkdir()
         sdk_sources = out / "sdk-sources.txt"
         sdk_files = list((app / "app/src/main/java").rglob("*.java"))
+        sdk_files.extend((out / "stubs/androidx/webkit").glob("*.java"))
         sdk_files.append(out / "stubs/io/github/flashsky1024/tavernium/BuildConfig.java")
         sdk_sources.write_text("\n".join('"' + f.as_posix() + '"' for f in sdk_files), encoding="utf-8")
         run("compile_android_sdk", ["javac", "-J-Dfile.encoding=UTF-8", "-J-Dstdout.encoding=UTF-8",

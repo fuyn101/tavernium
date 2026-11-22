@@ -111,6 +111,14 @@ login.microsoftonline.com  appleid.apple.com
 - 只在**主页面跳转**时放行。这些页面拿不到 `TavernKeep` 原生接口——接口按文档来源开关，只有酒馆自己的页面才有
 - 其他站外链接仍然交给系统浏览器，这条没变
 
+### 通行密钥（Passkey / WebAuthn）
+
+在支持 WebAuthn 的 Android System WebView 上，点登录页的「使用通行密钥」即可调用系统凭据选择器。旧 WebView 保留原来的登录流程，可以选择站点允许的其他方式。
+
+自建登录页需要在 **Passkey 的 RP ID 域名**上发布 `https://<RP ID>/.well-known/assetlinks.json`，用 `delegate_permission/common.get_login_creds` 关联 APK 的包名和签名证书 SHA-256。正式版包名是 `io.github.flashsky1024.tavernium`；测试版是 `io.github.flashsky1024.tavernium.debug`，两者签名也不同。服务端校验 WebAuthn 响应时须接受对应 APK 的 Android origin。见 [Android 配置说明](https://developer.android.com/identity/credential-manager/prerequisites)。
+
+登录域名白名单只决定页面能否在应用里打开，不授予凭据访问权。若 Passkey 属于 Cloudflare Access 等第三方管理的域名，只在酒馆域名配置关联无效。
+
 ### 导出文件
 
 在酒馆里导出的聊天记录等文件，会直接存进手机的「下载」文件夹，任何文件管理器都能找到。文件名里不能用的字符会被自动清理。
@@ -200,7 +208,7 @@ onCreate
 
 ## 代码结构
 
-14 个 Java 文件，共 7,734 行，零第三方依赖，只用 Android 框架 API 和 JDK。
+主体使用 Android 框架 API 和 JDK；WebAuthn 使用 AndroidX WebKit 和 Credential Manager。
 
 | 文件 | 职责 |
 |---|---|
@@ -222,6 +230,8 @@ onCreate
 ## 自己编译
 
 需要 JDK 17+ 和 Android SDK 36。
+
+没有本地 SDK 时，可在 GitHub Actions 的 **Android debug APK** 运行页下载 `tavernium-debug`，解压后安装 APK。构建日志的 `signingReport` 提供本次调试证书的 SHA-256；不同运行的临时签名可能不同，不要把它用作生产关联。
 
 ```bash
 ./gradlew assembleRelease
@@ -245,7 +255,7 @@ cd verification && python3 run_verify.py
 - `gen_stubs.py` 生成最小的 Android API 桩（Activity、WebView、SharedPreferences 等）
 - 桩、真实源码和测试一起用 `javac` 编译，在 Java 侧跑单元测试
 - 注入页面的 JS 脚本单独抽出来，交给 Node 做行为验证
-- 加上 `--android-jar <android.jar 路径>` 可以用真实 SDK 再编译一遍，确认没有依赖桩造成的假象
+- 加上 `--android-jar <android.jar 路径>` 可以用真实 SDK 再编译一遍；AndroidX 接口仍使用桩，真实库由 Gradle 构建验证
 
 ## 项目信息
 
@@ -286,7 +296,7 @@ Copyright (C) 2026 flashsky1024
 
 ### 关于以其他许可分发
 
-本项目的著作权由作者一人持有，代码不含任何第三方依赖（只用 Android 系统 API 与 `java.*`），因此作者可以在 AGPL-3.0 之外，另行以其他条款授权同一份代码。这属于著作权人本来就有的权利——AGPL 约束的是使用者，不是作者本人。
+作者可在 AGPL-3.0 之外另行授权项目自有代码；AndroidX 等依赖仍适用各自的许可证。
 
 需要说明的是，**这种另行授权不会影响任何人已经获得的副本**：通过本仓库取得的版本，其授权始终是 AGPL-3.0，作者既不能也不会收回——已经发出的历史版本也不例外。另行授权只针对新的分发。若需要在 AGPL-3.0 之外的条件下使用本项目，可联系作者。
 
